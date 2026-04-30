@@ -24,7 +24,10 @@ from api.routes import router
 
 load_dotenv(Path(__file__).resolve().parent / ".env")
 
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
+FRONTEND_URL = os.getenv(
+    "FRONTEND_URL",
+    "http://localhost:3000,https://digital-asset-protection-one.vercel.app"
+)
 ALLOWED_ORIGINS = [
     origin.strip()
     for origin in FRONTEND_URL.split(",")
