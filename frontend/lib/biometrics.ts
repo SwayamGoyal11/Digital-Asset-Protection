@@ -28,12 +28,16 @@ export function createBiometricCapture(target: HTMLElement | Document = document
   const handleKeyDown = (e: Event) => {
     const ke = e as KeyboardEvent;
     if (!startTime) startTime = performance.now();
-    keystrokes.push({ key: ke.key, timestamp: performance.now(), event_type: 'keydown' });
+    if (ke.key) {
+      keystrokes.push({ key: ke.key, timestamp: performance.now(), event_type: 'keydown' });
+    }
   };
 
   const handleKeyUp = (e: Event) => {
     const ke = e as KeyboardEvent;
-    keystrokes.push({ key: ke.key, timestamp: performance.now(), event_type: 'keyup' });
+    if (ke.key) {
+      keystrokes.push({ key: ke.key, timestamp: performance.now(), event_type: 'keyup' });
+    }
   };
 
   const handleMouseMove = (e: Event) => {
@@ -60,7 +64,7 @@ export function createBiometricCapture(target: HTMLElement | Document = document
       target.removeEventListener('mousemove', handleMouseMove);
 
       return {
-        keystrokes: [...keystrokes],
+        keystrokes: keystrokes.filter((event) => event.key && event.timestamp && event.event_type),
         mouse_movements: [...mouseMovements],
         form_fill_duration_ms: startTime ? endTime - startTime : null,
       };

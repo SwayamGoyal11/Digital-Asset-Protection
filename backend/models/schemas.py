@@ -31,7 +31,7 @@ class TokenResponse(BaseModel):
 # ─── Behavior / Biometrics ────────────────────────────────────────────────────
 
 class KeystrokeEvent(BaseModel):
-    key: str
+    key: str = ""
     timestamp: float          # epoch ms
     event_type: str           # keydown | keyup
 

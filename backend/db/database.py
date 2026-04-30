@@ -5,12 +5,13 @@ Swap DATABASE_URL in .env to switch to PostgreSQL seamlessly.
 """
 
 import os
+from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./antigravity.db")
 

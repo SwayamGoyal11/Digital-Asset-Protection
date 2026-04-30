@@ -15,3 +15,4 @@ aiofiles
 requests
 tinydb
 python-dateutil
+pymongo[srv]

@@ -5,6 +5,7 @@ Authentication service: password hashing, JWT token creation and verification.
 from __future__ import annotations
 import os
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Optional
 
 from jose import JWTError, jwt
@@ -14,7 +15,7 @@ from dotenv import load_dotenv
 
 from models.db_models import User
 
-load_dotenv()
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 SECRET_KEY  = os.getenv("SECRET_KEY", "changeme-supersecret-32chars!!!!")
 ALGORITHM   = os.getenv("ALGORITHM", "HS256")

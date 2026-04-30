@@ -1,5 +1,5 @@
 """
-All REST API routes for Antigravity AI.
+All REST API routes for VaultX.
 
 Endpoints:
   POST /collect-data          – ingest device fingerprint + behavior payload
@@ -22,6 +22,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 
 from db.database import get_db
+from db.mongodb import mongo_db
 from models import db_models, schemas
 from services import auth_service, device_service, ip_service, geo_velocity, multi_account
 from behavior_profiler import extractor as bextractor, baseline as bbaseline
@@ -57,6 +58,18 @@ def register(body: schemas.UserCreate, db: Session = Depends(get_db)):
     if auth_service.get_user_by_email(db, body.email):
         raise HTTPException(status_code=400, detail="Email already registered")
     user  = auth_service.create_user(db, body.email, body.password)
+    mongo_db.users.update_one(
+        {"sql_id": user.id},
+        {"$set": {
+            "sql_id":        user.id,
+            "email":         user.email,
+            "password_hash": user.password_hash,
+            "created_at":    user.created_at,
+            "is_active":     user.is_active,
+            "source":        "register",
+        }},
+        upsert=True,
+    )
     token = auth_service.create_access_token({"sub": str(user.id)})
     return schemas.TokenResponse(access_token=token, user_id=user.id, email=user.email)
 
@@ -184,6 +197,21 @@ async def login(body: schemas.LoginRequest, request: Request, db: Session = Depe
     db.commit()
     db.refresh(event)
 
+    # ── Mirror to MongoDB Atlas ────────────────────────────────────────────
+    mongo_db.login_events.insert_one({
+        "sql_id":     event.id,
+        "user_id":    event.user_id,
+        "device_id":  event.device_id,
+        "ip_address": event.ip_address,
+        "location":   event.location,
+        "risk_score": event.risk_score,
+        "risk_level": event.risk_level,
+        "factors":    event.factors,
+        "timestamp":  event.timestamp,
+        "is_flagged": event.is_flagged,
+        "scenario":   event.scenario,
+    })
+
     # Update behavioral baseline
     if behavior_features:
         bbaseline.update_baseline(db, user.id, behavior_features, location)
@@ -271,6 +299,7 @@ def mark_alert_read(alert_id: int, db: Session = Depends(get_db)):
         raise HTTPException(404, "Alert not found")
     alert.is_read = True
     db.commit()
+    mongo_db.alerts.update_one({"sql_id": alert.id}, {"$set": {"is_read": True}})
     return {"status": "ok"}
 
 

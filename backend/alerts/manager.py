@@ -10,6 +10,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 from models.db_models import Alert
 from websocket.handler import manager
+from db.mongodb import mongo_db
 
 
 async def create_and_broadcast_alert(
@@ -39,6 +40,19 @@ async def create_and_broadcast_alert(
     db.add(alert)
     db.commit()
     db.refresh(alert)
+
+    # ── Mirror to MongoDB Atlas ────────────────────────────────────────────
+    mongo_db.alerts.insert_one({
+        "sql_id":        alert.id,
+        "user_id":       alert.user_id,
+        "login_event_id": alert.login_event_id,
+        "alert_type":    alert.alert_type,
+        "severity":      alert.severity,
+        "message":       alert.message,
+        "details":       alert.details,
+        "timestamp":     alert.timestamp,
+        "is_read":       alert.is_read,
+    })
 
     # Broadcast to all dashboard WebSocket clients
     await manager.broadcast({

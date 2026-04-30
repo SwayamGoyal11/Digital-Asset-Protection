@@ -10,6 +10,33 @@ import NeonButton from '@/components/ui/NeonButton';
 import RiskBadge from '@/components/ui/RiskBadge';
 import type { LoginResponse } from '@/types';
 
+function getErrorMessage(err: any): string {
+  const detail = err?.response?.data?.detail;
+
+  if (typeof detail === 'string') {
+    return detail;
+  }
+
+  if (Array.isArray(detail)) {
+    return detail
+      .map((item) => {
+        if (typeof item === 'string') return item;
+        if (item?.msg && Array.isArray(item?.loc)) {
+          return `${item.loc.join('.')}: ${item.msg}`;
+        }
+        if (item?.msg) return item.msg;
+        return JSON.stringify(item);
+      })
+      .join('; ');
+  }
+
+  if (detail && typeof detail === 'object') {
+    return detail.msg || JSON.stringify(detail);
+  }
+
+  return err?.message || 'Authentication failed. Please check your credentials.';
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const [mode, setMode]         = useState<'login' | 'register'>('login');
@@ -62,7 +89,7 @@ export default function LoginPage() {
       // Auto-redirect after showing result
       setTimeout(() => router.push('/dashboard'), 2000);
     } catch (err: any) {
-      setError(err?.response?.data?.detail || 'Authentication failed. Please check your credentials.');
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
       // Restart capture
@@ -83,18 +110,28 @@ export default function LoginPage() {
     }}>
       {/* Background orbs */}
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
-        <div style={{
-          position: 'absolute', top: '-20%', left: '-10%',
-          width: '600px', height: '600px',
-          background: 'radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%)',
-          borderRadius: '50%',
-        }} />
-        <div style={{
-          position: 'absolute', bottom: '-20%', right: '-10%',
-          width: '500px', height: '500px',
-          background: 'radial-gradient(circle, rgba(139,92,246,0.10) 0%, transparent 70%)',
-          borderRadius: '50%',
-        }} />
+        <motion.div
+          animate={{ x: [0, 20, 0], y: [0, -20, 0] }}
+          transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+          style={{
+            position: 'absolute', top: '-10%', left: '-10%',
+            width: '600px', height: '600px',
+            background: 'radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, transparent 60%)',
+            borderRadius: '50%',
+            filter: 'blur(40px)',
+          }}
+        />
+        <motion.div
+          animate={{ x: [0, -30, 0], y: [0, 20, 0] }}
+          transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }}
+          style={{
+            position: 'absolute', bottom: '-10%', right: '-10%',
+            width: '500px', height: '500px',
+            background: 'radial-gradient(circle, rgba(124, 58, 237, 0.15) 0%, transparent 60%)',
+            borderRadius: '50%',
+            filter: 'blur(40px)',
+          }}
+        />
       </div>
 
       <motion.div
@@ -112,19 +149,20 @@ export default function LoginPage() {
           >
             <div style={{
               width: '48px', height: '48px',
-              background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+              background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
               borderRadius: '14px',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: '24px',
-              boxShadow: '0 0 30px rgba(59,130,246,0.4)',
+              boxShadow: '0 0 30px rgba(37, 99, 235, 0.4)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
             }}>
-              🛡️
+              💠
             </div>
             <div style={{ textAlign: 'left' }}>
-              <h1 className="gradient-text" style={{ fontSize: '22px', fontWeight: 800, lineHeight: 1 }}>
-                Antigravity AI
+              <h1 className="gradient-text" style={{ fontSize: '26px', fontWeight: 800, lineHeight: 1, letterSpacing: '-0.02em' }}>
+                VaultX
               </h1>
-              <p style={{ color: '#475569', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: '2px' }}>
+              <p style={{ color: '#64748b', fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', marginTop: '4px', fontWeight: 600 }}>
                 Identity Intelligence
               </p>
             </div>
