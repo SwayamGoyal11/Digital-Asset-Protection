@@ -16,11 +16,11 @@ export default function GlassCard({ children, className = '', hover = false, glo
 
   return (
     <motion.div
-      className={`glass ${glowClass} ${className}`}
+      className={`glass p-6 ${glowClass} ${className}`}
       onClick={onClick}
       whileHover={hover ? { scale: 1.01, y: -2 } : undefined}
       transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-      style={{ padding: '24px', cursor: onClick ? 'pointer' : 'default' }}
+      style={{ cursor: onClick ? 'pointer' : 'default' }}
     >
       {children}
     </motion.div>

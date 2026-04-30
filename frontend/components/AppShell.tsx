@@ -2,14 +2,15 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ReactNode, useEffect, useState } from 'react';
+import { LayoutDashboard, ShieldAlert, Users, Globe, Search, Bell, LogOut, Shield } from 'lucide-react';
 
 const NAV = [
-  { href: '/dashboard', icon: '📊', label: 'Dashboard' },
-  { href: '/alerts',    icon: '🚨', label: 'Alerts' },
-  { href: '/users',     icon: '👤', label: 'Users' },
-  { href: '/geo',       icon: '🌍', label: 'Geo Map' },
+  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/alerts',    icon: ShieldAlert, label: 'Alerts' },
+  { href: '/users',     icon: Users, label: 'Users' },
+  { href: '/geo',       icon: Globe, label: 'Geo Map' },
 ];
 
 export default function AppShell({ children }: { children: ReactNode }) {
@@ -27,80 +28,97 @@ export default function AppShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
+    <div className="flex min-h-screen bg-transparent text-slate-100 overflow-hidden relative">
       {/* Sidebar */}
-      <aside style={{
-        width: '220px',
-        flexShrink: 0,
-        background: 'rgba(5,8,16,0.8)',
-        borderRight: '1px solid rgba(255,255,255,0.06)',
-        backdropFilter: 'blur(20px)',
-        display: 'flex',
-        flexDirection: 'column',
-        padding: '24px 16px',
-        position: 'sticky',
-        top: 0,
-        height: '100vh',
-      }}>
+      <aside className="w-[260px] shrink-0 border-r border-white/5 bg-[#090d16]/80 backdrop-blur-2xl flex flex-col p-6 sticky top-0 h-screen z-50 shadow-2xl">
         {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '36px', padding: '0 4px' }}>
-          <div style={{
-            width: '36px', height: '36px',
-            background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-            borderRadius: '10px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '18px',
-            boxShadow: '0 0 20px rgba(59,130,246,0.3)',
-          }}>🛡️</div>
+        <div className="flex items-center gap-3 mb-10 px-1">
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(37,99,235,0.3)] border border-white/20">
+            <Shield className="w-5 h-5 text-white" />
+          </div>
           <div>
-            <p className="gradient-text" style={{ fontWeight: 800, fontSize: '14px', lineHeight: 1 }}>Antigravity AI</p>
-            <p style={{ color: '#334155', fontSize: '10px' }}>v1.0.0</p>
+            <p className="font-extrabold text-lg leading-none tracking-tight gradient-text">VaultX</p>
+            <p className="text-slate-500 text-xs mt-1 font-medium">Enterprise Edition</p>
           </div>
         </div>
 
         {/* Nav */}
-        <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          {NAV.map(({ href, icon, label }) => (
-            <Link
-              key={href}
-              href={href}
-              className={`nav-item ${pathname.startsWith(href) ? 'active' : ''}`}
-            >
-              <span style={{ fontSize: '16px' }}>{icon}</span>
-              {label}
-            </Link>
-          ))}
+        <nav className="flex-1 flex flex-col gap-2">
+          {NAV.map(({ href, icon: Icon, label }) => {
+            const isActive = pathname.startsWith(href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`nav-item ${isActive ? 'active' : ''}`}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="active-indicator"
+                    className="absolute left-0 w-1 h-1/2 bg-blue-500 rounded-r-full"
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                  />
+                )}
+                <Icon className={`w-5 h-5 ${isActive ? 'text-blue-400' : 'text-slate-400'}`} />
+                {label}
+              </Link>
+            );
+          })}
         </nav>
 
         {/* User */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '16px' }}>
-          <div style={{ padding: '8px 10px', marginBottom: '8px' }}>
-            <p style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {email || 'Analyst'}
-            </p>
-            <p style={{ color: '#475569', fontSize: '10px' }}>Security Analyst</p>
+        <div className="border-t border-white/10 pt-6 mt-4">
+          <div className="px-3 mb-4">
+            <p className="text-slate-300 text-sm font-medium truncate">{email || 'Analyst'}</p>
+            <p className="text-slate-500 text-xs">Security Analyst</p>
           </div>
           <button
             onClick={logout}
-            className="nav-item"
-            style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer' }}
+            className="w-full nav-item text-red-400 hover:text-red-300 hover:bg-red-500/10"
           >
-            <span>🚪</span> Sign Out
+            <LogOut className="w-5 h-5" />
+            Sign Out
           </button>
         </div>
       </aside>
 
-      {/* Main content */}
-      <main style={{ flex: 1, overflow: 'auto', padding: '32px' }}>
-        <motion.div
-          key={pathname}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.25 }}
-        >
-          {children}
-        </motion.div>
-      </main>
+      {/* Main content wrapper */}
+      <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
+        {/* Top Header */}
+        <header className="h-20 border-b border-white/5 bg-[#090d16]/50 backdrop-blur-xl sticky top-0 z-40 flex items-center justify-between px-8">
+          <div className="relative w-96">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+            <input 
+              type="text" 
+              placeholder="Search assets, IP addresses, or users..." 
+              className="w-full bg-black/20 border border-white/5 rounded-lg py-2.5 pl-10 pr-4 text-sm text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all shadow-inner"
+            />
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <button className="relative p-2 rounded-full hover:bg-white/5 text-slate-400 transition-colors">
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-1.5 right-2 w-2 h-2 bg-purple-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
+            </button>
+            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 border border-white/20 shadow-md" />
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main className="flex-1 overflow-auto p-8 relative">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={pathname}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
+        </main>
+      </div>
     </div>
   );
 }

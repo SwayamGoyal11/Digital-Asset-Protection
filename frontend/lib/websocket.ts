@@ -12,7 +12,7 @@ import type { Alert } from '@/types';
 
 const WS_BASE =
   process.env.NEXT_PUBLIC_WS_URL ??
-  (process.env.NODE_ENV === 'development' ? 'ws://localhost:8000/api/ws' : '');
+  'wss://digital-asset-protection-if7u.onrender.com/api/ws';
 
 interface WSMessage {
   type: string;

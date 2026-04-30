@@ -15,17 +15,14 @@ const CustomTooltip = ({ active, payload }: any) => {
   if (!active || !payload?.length) return null;
   const item = payload[0];
   return (
-    <div style={{
-      background: 'rgba(10,15,30,0.95)',
-      border: '1px solid rgba(255,255,255,0.1)',
-      borderRadius: '10px',
-      padding: '12px 16px',
-    }}>
-      <p style={{ color: '#f1f5f9', fontWeight: 600, marginBottom: '4px', fontSize: '13px' }}>{item.payload.reason}</p>
-      <p style={{ color: '#3b82f6', fontWeight: 700 }}>+{item.value} pts</p>
-      {item.payload.percentage && (
-        <p style={{ color: '#64748b', fontSize: '11px' }}>{item.payload.percentage}% of total risk</p>
-      )}
+    <div className="glass p-3 !bg-[#0a0f1e]/90 shadow-xl border-white/10">
+      <p className="text-slate-200 font-semibold mb-1 text-xs">{item.payload.reason}</p>
+      <div className="flex items-baseline gap-2">
+        <p className="text-blue-400 font-bold text-lg">+{item.value} pts</p>
+        {item.payload.percentage && (
+          <p className="text-slate-500 text-xs font-medium">{item.payload.percentage}% of risk</p>
+        )}
+      </div>
     </div>
   );
 };
@@ -33,38 +30,50 @@ const CustomTooltip = ({ active, payload }: any) => {
 export default function RiskBreakdown({ factors }: Props) {
   if (!factors || factors.length === 0) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 160, color: '#475569', fontSize: '13px' }}>
-        No risk factors detected
+      <div className="flex flex-col items-center justify-center h-40 text-slate-500 bg-white/[0.02] border border-white/5 rounded-xl border-dashed">
+        <span className="text-2xl mb-2 opacity-50">🛡️</span>
+        <span className="text-sm font-medium">No risk factors detected</span>
       </div>
     );
   }
 
   const data = factors.map((f) => ({
-    reason: f.reason.length > 20 ? f.reason.slice(0, 20) + '…' : f.reason,
+    reason: f.reason.length > 25 ? f.reason.slice(0, 25) + '…' : f.reason,
     fullReason: f.reason,
     impact: f.impact,
     percentage: f.percentage,
   }));
 
   return (
-    <div style={{ width: '100%', height: 200 }}>
+    <div className="w-full h-[220px]">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} layout="vertical" margin={{ top: 0, right: 20, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
-          <XAxis type="number" stroke="#334155" tick={{ fill: '#475569', fontSize: 10 }} tickLine={false} axisLine={false} />
+        <BarChart data={data} layout="vertical" margin={{ top: 0, right: 30, left: 0, bottom: 0 }}>
+          <defs>
+            {data.map((entry, index) => {
+              const color = getRiskColor(entry.impact * 2);
+              return (
+                <linearGradient key={`gradient-${index}`} id={`colorUv-${index}`} x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor={color} stopOpacity={0.6} />
+                  <stop offset="100%" stopColor={color} stopOpacity={1} />
+                </linearGradient>
+              );
+            })}
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
+          <XAxis type="number" stroke="#334155" tick={{ fill: '#64748b', fontSize: 11, fontWeight: 500 }} tickLine={false} axisLine={false} />
           <YAxis
             type="category"
             dataKey="reason"
-            width={130}
+            width={140}
             stroke="#334155"
-            tick={{ fill: '#94a3b8', fontSize: 11 }}
+            tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 500 }}
             tickLine={false}
             axisLine={false}
           />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
-          <Bar dataKey="impact" radius={[0, 6, 6, 0]} maxBarSize={20}>
+          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.02)' }} />
+          <Bar dataKey="impact" radius={[0, 4, 4, 0]} maxBarSize={16} animationDuration={1000}>
             {data.map((entry, index) => (
-              <Cell key={index} fill={getRiskColor(entry.impact * 2)} fillOpacity={0.9} />
+              <Cell key={`cell-${index}`} fill={`url(#colorUv-${index})`} />
             ))}
           </Bar>
         </BarChart>

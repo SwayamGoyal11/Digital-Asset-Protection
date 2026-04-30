@@ -41,11 +41,11 @@ export default function GeoMap({ events }: Props) {
   const lines = buildTravelLines(events);
 
   return (
-    <div style={{ borderRadius: '12px', overflow: 'hidden', height: '480px' }}>
+    <div className="w-full h-full min-h-[480px]">
       <MapContainer
         center={[20, 0]}
         zoom={2}
-        style={{ height: '100%', width: '100%', background: '#0a0f1e' }}
+        className="w-full h-full bg-[#0a0f1e] z-0"
         attributionControl={false}
       >
         <TileLayer
@@ -59,9 +59,9 @@ export default function GeoMap({ events }: Props) {
             key={i}
             positions={line.positions}
             pathOptions={{
-              color:     line.anomaly ? '#a855f7' : 'rgba(59,130,246,0.4)',
-              weight:    line.anomaly ? 2 : 1,
-              dashArray: line.anomaly ? undefined : '4 4',
+              color:     line.anomaly ? '#a855f7' : 'rgba(59,130,246,0.3)',
+              weight:    line.anomaly ? 2 : 1.5,
+              dashArray: line.anomaly ? undefined : '4 6',
             }}
           />
         ))}
@@ -74,27 +74,68 @@ export default function GeoMap({ events }: Props) {
             <CircleMarker
               key={event.id}
               center={[event.location.lat, event.location.lon]}
-              radius={event.risk_score > 50 ? 10 : 7}
+              radius={event.risk_score > 50 ? 12 : 8}
               pathOptions={{
-                color,
+                color: event.scenario === 'geo_anomaly' ? '#a855f7' : color,
                 fillColor: color,
-                fillOpacity: 0.8,
-                weight: event.scenario === 'geo_anomaly' ? 2 : 1,
+                fillOpacity: 0.7,
+                weight: event.scenario === 'geo_anomaly' ? 3 : 1.5,
               }}
             >
-              <Popup>
-                <div style={{ fontFamily: 'sans-serif', fontSize: '12px', minWidth: '160px' }}>
-                  <strong>User #{event.user_id}</strong>
-                  <br />📍 {event.location.city}, {event.location.country}
-                  <br />🌐 {event.ip_address}
-                  <br />⚡ Risk: <span style={{ color, fontWeight: 700 }}>{event.risk_score.toFixed(1)} ({event.risk_level})</span>
-                  {event.scenario && <><br />🏷️ {event.scenario.replace('_', ' ')}</>}
+              <Popup className="custom-popup">
+                <div className="flex flex-col gap-2 min-w-[180px]">
+                  <div className="flex justify-between items-center border-b border-white/10 pb-2 mb-1">
+                    <span className="font-bold text-slate-200">User #{event.user_id}</span>
+                    {event.scenario === 'geo_anomaly' && <span className="bg-purple-500/20 text-purple-400 text-[10px] font-bold px-1.5 py-0.5 rounded border border-purple-500/30">ANOMALY</span>}
+                  </div>
+                  
+                  <div className="text-xs text-slate-300 flex flex-col gap-1.5">
+                    <div className="flex items-start gap-2">
+                      <span className="opacity-50">📍</span>
+                      <span>{event.location.city}, {event.location.country}</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="opacity-50">🌐</span>
+                      <span className="font-mono text-[10px]">{event.ip_address}</span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="opacity-50 text-xs uppercase font-bold tracking-wider">Risk:</span>
+                      <span className="font-bold" style={{ color }}>{event.risk_score.toFixed(1)} <span className="text-[10px] opacity-70 font-normal">({event.risk_level})</span></span>
+                    </div>
+                  </div>
                 </div>
               </Popup>
             </CircleMarker>
           );
         })}
       </MapContainer>
+      
+      {/* Global styles for Leaflet custom popup */}
+      <style jsx global>{`
+        .leaflet-popup-content-wrapper {
+          background: rgba(10, 15, 30, 0.95);
+          backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: #f8fafc;
+          border-radius: 12px;
+          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+          padding: 0;
+        }
+        .leaflet-popup-content {
+          margin: 12px 16px;
+        }
+        .leaflet-popup-tip {
+          background: rgba(10, 15, 30, 0.95);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .leaflet-container a.leaflet-popup-close-button {
+          color: #94a3b8;
+          padding: 8px;
+        }
+        .leaflet-container a.leaflet-popup-close-button:hover {
+          color: #f8fafc;
+        }
+      `}</style>
     </div>
   );
 }

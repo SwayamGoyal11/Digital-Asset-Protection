@@ -7,13 +7,17 @@ import type { LoginEvent } from '@/types';
 import AppShell from '@/components/AppShell';
 import GlassCard from '@/components/ui/GlassCard';
 import RiskBadge from '@/components/ui/RiskBadge';
-import { RISK_COLORS } from '@/lib/riskColors';
 import { format } from 'date-fns';
+import { MapPin, AlertTriangle, ShieldCheck, Globe, Navigation, Clock, Activity } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 // Dynamic import for Leaflet (SSR incompatible)
 const GeoMap = dynamic(() => import('@/components/geo/GeoMap'), { ssr: false, loading: () => (
-  <div style={{ height: '480px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#475569', background: 'rgba(255,255,255,0.02)', borderRadius: '12px' }}>
-    Loading map…
+  <div className="h-[480px] flex items-center justify-center text-slate-500 bg-white/[0.02] border border-white/5 rounded-xl border-dashed">
+    <div className="flex flex-col items-center gap-4 animate-pulse">
+      <Globe className="w-10 h-10 text-blue-500/50" />
+      <span className="font-medium tracking-wider uppercase text-xs">Initializing Satellite Map…</span>
+    </div>
   </div>
 ) });
 
@@ -33,73 +37,97 @@ export default function GeoPage() {
 
   return (
     <AppShell>
-      <div style={{ marginBottom: '28px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '4px' }}>
+      <div className="mb-8">
+        <h1 className="text-2xl font-extrabold tracking-tight mb-1 flex items-center gap-2">
+          <Globe className="w-6 h-6 text-blue-500" />
           Geo <span className="gradient-text">Intelligence Map</span>
         </h1>
-        <p style={{ color: '#475569', fontSize: '13px' }}>
-          {events.length} geolocated login events · {countries.length} countries · {anomalies.length} velocity anomalies
+        <p className="text-slate-400 text-sm font-medium">
+          {events.length} geolocated login events <span className="mx-2">•</span> {countries.length} countries <span className="mx-2">•</span> <span className="text-purple-400">{anomalies.length} velocity anomalies</span>
         </p>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Map */}
-        <GlassCard>
+        <GlassCard className="xl:col-span-2 p-0 overflow-hidden relative">
+          <div className="absolute top-4 left-4 z-[400] glass px-4 py-2 flex items-center gap-3">
+             <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500" /> <span className="text-[10px] text-slate-300 uppercase tracking-wider font-bold">Standard</span></div>
+             <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500" /> <span className="text-[10px] text-slate-300 uppercase tracking-wider font-bold">Suspicious</span></div>
+             <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse shadow-[0_0_8px_rgba(168,85,247,0.8)]" /> <span className="text-[10px] text-slate-300 uppercase tracking-wider font-bold">Anomaly</span></div>
+          </div>
           {!loading && <GeoMap events={events} />}
         </GlassCard>
 
-        {/* Geo anomalies list */}
-        {anomalies.length > 0 && (
-          <GlassCard>
-            <h3 style={{ fontWeight: 700, fontSize: '16px', marginBottom: '16px' }}>🚨 Velocity Anomalies</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {anomalies.map((e) => (
-                <div key={e.id} style={{
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  padding: '12px 14px',
-                  background: 'rgba(168,85,247,0.08)',
-                  border: '1px solid rgba(168,85,247,0.2)',
-                  borderRadius: '10px', fontSize: '12px',
-                }}>
-                  <div>
-                    <span style={{ color: '#e2e8f0', fontWeight: 600 }}>User #{e.user_id}</span>
-                    <span style={{ color: '#64748b', marginLeft: '12px' }}>
-                      {e.location?.city}, {e.location?.country}
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <RiskBadge level={e.risk_level} score={e.risk_score} size="sm" />
-                    <span style={{ color: '#475569' }}>{format(new Date(e.timestamp), 'MMM d, HH:mm')}</span>
-                  </div>
-                </div>
-              ))}
+        {/* Right Sidebar */}
+        <div className="flex flex-col gap-6">
+          {/* Geo anomalies list */}
+          <GlassCard className="flex flex-col h-[300px]">
+            <h3 className="font-bold text-lg tracking-tight mb-4 flex items-center gap-2 text-purple-400">
+              <Activity className="w-5 h-5" /> Velocity Anomalies
+            </h3>
+            
+            <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 flex flex-col gap-3">
+              {anomalies.length === 0 ? (
+                 <div className="flex flex-col items-center justify-center h-full text-slate-500">
+                   <ShieldCheck className="w-8 h-8 mb-2 opacity-50 text-emerald-500" />
+                   <span className="text-xs font-medium">No impossible travel detected</span>
+                 </div>
+              ) : (
+                anomalies.map((e, idx) => (
+                  <motion.div 
+                    initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.1 }}
+                    key={e.id} 
+                    className="flex flex-col gap-2 p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl hover:bg-purple-500/20 transition-colors"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="text-slate-200 font-bold text-sm">User #{e.user_id}</span>
+                        <div className="flex items-center gap-1 mt-1 text-slate-400 text-xs">
+                          <MapPin className="w-3 h-3" /> {e.location?.city}, {e.location?.country}
+                        </div>
+                      </div>
+                      <RiskBadge level={e.risk_level} score={e.risk_score} size="sm" />
+                    </div>
+                    <div className="flex items-center gap-1.5 mt-1 text-[10px] font-medium text-slate-500 uppercase tracking-wider">
+                      <Clock className="w-3 h-3" /> {format(new Date(e.timestamp), 'MMM d, HH:mm')}
+                    </div>
+                  </motion.div>
+                ))
+              )}
             </div>
           </GlassCard>
-        )}
 
-        {/* Country breakdown */}
-        <GlassCard>
-          <h3 style={{ fontWeight: 700, fontSize: '16px', marginBottom: '16px' }}>Login Origins</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '10px' }}>
-            {countries.map((country) => {
-              const count = events.filter((e) => e.location?.country === country).length;
-              const maxRisk = Math.max(...events.filter((e) => e.location?.country === country).map((e) => e.risk_score));
-              return (
-                <div key={country} style={{
-                  background: 'rgba(255,255,255,0.03)',
-                  borderRadius: '10px', padding: '12px 14px',
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                }}>
-                  <span style={{ color: '#94a3b8', fontSize: '13px', fontWeight: 500 }}>🌐 {country}</span>
-                  <div style={{ textAlign: 'right' }}>
-                    <p style={{ color: '#f1f5f9', fontWeight: 700, fontSize: '16px' }}>{count}</p>
-                    <p style={{ color: '#475569', fontSize: '10px' }}>max {maxRisk.toFixed(0)} risk</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </GlassCard>
+          {/* Country breakdown */}
+          <GlassCard className="flex-1">
+            <h3 className="font-bold text-lg tracking-tight mb-4 flex items-center gap-2">
+              <Navigation className="w-5 h-5 text-blue-400" /> Login Origins
+            </h3>
+            <div className="flex flex-col gap-2 overflow-y-auto max-h-[300px] custom-scrollbar pr-2">
+              {countries.map((country, idx) => {
+                const count = events.filter((e) => e.location?.country === country).length;
+                const maxRisk = Math.max(...events.filter((e) => e.location?.country === country).map((e) => e.risk_score));
+                return (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }}
+                    key={country} 
+                    className="bg-white/[0.02] border border-white/5 rounded-xl p-3 flex justify-between items-center hover:bg-white/[0.04] transition-colors"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-slate-500" />
+                      <span className="text-slate-300 text-sm font-semibold">{country}</span>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-slate-100 font-bold text-lg leading-none">{count}</p>
+                      <p className="text-slate-500 text-[10px] font-medium uppercase tracking-wider mt-1 flex items-center gap-1">
+                        <AlertTriangle className={`w-3 h-3 ${maxRisk > 50 ? 'text-amber-500' : 'text-emerald-500'}`} /> Max {maxRisk.toFixed(0)}
+                      </p>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </GlassCard>
+        </div>
       </div>
     </AppShell>
   );

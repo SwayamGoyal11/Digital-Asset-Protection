@@ -1,5 +1,5 @@
 /**
- * Shared TypeScript interfaces for the Antigravity AI platform.
+ * Shared TypeScript interfaces for the VaultX platform.
  */
 
 export interface RiskFactor {
