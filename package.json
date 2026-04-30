@@ -1,0 +1,30 @@
+{
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mongodb": "^7.2.0",
+    "mongoose": "^9.6.1"
+  },
+  "name": "digital-asset-protection-project",
+  "version": "1.0.0",
+  "description": "<div align=\"center\">",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SwayamGoyal11/Digital-Asset-Protection.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/SwayamGoyal11/Digital-Asset-Protection/issues"
+  },
+  "homepage": "https://github.com/SwayamGoyal11/Digital-Asset-Protection#readme",
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
