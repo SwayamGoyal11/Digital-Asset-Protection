@@ -10,7 +10,9 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import type { Alert } from '@/types';
 
-const WS_BASE = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000/api/ws';
+const WS_BASE =
+  process.env.NEXT_PUBLIC_WS_URL ??
+  (process.env.NODE_ENV === 'development' ? 'ws://localhost:8000/api/ws' : '');
 
 interface WSMessage {
   type: string;
@@ -24,6 +26,7 @@ export function useAlertStream() {
   const clientId = useRef(`dashboard-${Math.random().toString(36).slice(2)}`);
 
   const connect = useCallback(() => {
+    if (!WS_BASE) return;
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
 
     const ws = new WebSocket(`${WS_BASE}/${clientId.current}`);

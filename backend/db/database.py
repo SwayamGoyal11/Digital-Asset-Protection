@@ -14,6 +14,8 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./antigravity.db")
+if DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
 
 # SQLite needs check_same_thread=False for FastAPI's async workers
 _connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
